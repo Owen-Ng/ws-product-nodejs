@@ -1,10 +1,46 @@
-const express = require('express')
-const pg = require('pg')
+const express = require('express');
+const pg = require('pg');
+require('dotenv').config();
+const app = express();
+const session = require('express-session');
+const date = require('date-and-time');
 
-const app = express()
+const {TimeExecutionLimit} = require("./TimeLimit.js");
+// const TimeExecutionLimit = TimeLimit.TimeExecutionLimit;
 // configs come from standard PostgreSQL env vars
 // https://www.postgresql.org/docs/9.6/static/libpq-envars.html
-const pool = new pg.Pool()
+
+app.use(
+  session({
+    secret: 'oursecret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      expires: 600000,
+      httpOnly: true,
+    },
+  })
+);
+
+const pool = new pg.Pool({
+  user: process.env.PGUSER,
+  password: process.env.PGPASSWORD,
+  host: process.env.PGHOST,
+  port: process.env.PGPORT,
+  database: process.env.PGDATABASE
+})
+
+// const cpool = new pg.Pool({
+//   user: process.env.CUSER,
+//   password: process.env.CPASSWORD,
+//   host: process.env.CHOST,
+//   port: process.env.CPORT,
+//   database: process.env.CDATABASE,
+//   ssl: {
+//     ca: fs.readFileSync('./cc-ca.crt').toString(),
+//   },
+
+// })
 
 const queryHandler = (req, res, next) => {
   pool.query(req.sqlQuery).then((r) => {
@@ -12,10 +48,37 @@ const queryHandler = (req, res, next) => {
   }).catch(next)
 }
 
-app.get('/', (req, res) => {
-  res.send('Welcome to EQ Works 😎')
+
+// app.post('/register', (req, res) =>{
+//   const [email, password] = req.body;
+//   const sql = ""
+// })
+app.get('/', (req, res, next) => {
+  if (req.session.time == undefined && req.session.user_id == undefined){
+    
+    req.session.time = new Date();
+    const token = Math.floor(Math.random() * 1000000000).toString() + req.session.time.toString();
+    req.session.user_id = token;
+    req.session.executions = {eventshourly:{count:0, time: undefined}, 
+    eventsdaily: {count:0, time: undefined}, statshourly: {count:0, time:undefined},
+     statsdaily: {count:0, time: undefined}, poi: {count:0, time: undefined}}
+    req.session.save();
+  }
+  console.log(req.session.time);
+  res.json({welcome:'Welcome to EQ Works 😎', time: req.session.time, user: req.session.user_id});
+  next();
 })
 
+// {
+//   "date": "2017-01-01T05:00:00.000Z",
+//   "hour": 1,
+//   "events": 14
+// },
+// {
+//   "date": "2017-01-01T05:00:00.000Z",
+//   "hour": 4,
+//   "events": 6
+// }
 app.get('/events/hourly', (req, res, next) => {
   req.sqlQuery = `
     SELECT date, hour, events
@@ -23,9 +86,44 @@ app.get('/events/hourly', (req, res, next) => {
     ORDER BY date, hour
     LIMIT 168;
   `
-  return next()
-}, queryHandler)
+ 
+  if (req.session.executions.eventshourly.time == undefined){
+    const date2 = new Date();
+    req.session.executions['eventshourly'].time = date2;
+  }
 
+  if (! (req.session.executions.eventshourly.time instanceof Date)){
+    req.session.executions.eventshourly.time = new Date(req.session.executions.eventshourly.time);
+  }
+
+  switch(TimeExecutionLimit(req.session.executions.eventshourly.time, req.session.executions.eventshourly.count, 5, 1)){
+
+    case 'renew':
+      req.session.executions.eventshourly.count = 1;
+      req.session.executions.eventshourly.time = undefined;
+      queryHandler(req,res,next);
+      break;
+
+    case 'block':
+      res.send({message:"Max Limit Reached"});
+      break;
+
+    case 'continue':
+      req.session.executions.eventshourly.count += 1;
+      queryHandler(req,res,next);
+      break;
+  }
+  return next()
+})
+
+// {
+//   "date": "2017-01-01T05:00:00.000Z",
+//   "events": "43"
+// },
+// {
+//   "date": "2017-01-02T05:00:00.000Z",
+//   "events": "32"
+// }
 app.get('/events/daily', (req, res, next) => {
   req.sqlQuery = `
     SELECT date, SUM(events) AS events
@@ -37,6 +135,27 @@ app.get('/events/daily', (req, res, next) => {
   return next()
 }, queryHandler)
 
+// {
+//   "date": "2017-01-01T05:00:00.000Z",
+//   "hour": 0,
+//   "impressions": 10746,
+//   "clicks": 23,
+//   "revenue": "64.9215630000000"
+// },
+// {
+//   "date": "2017-01-01T05:00:00.000Z",
+//   "hour": 1,
+//   "impressions": 141397,
+//   "clicks": 201,
+//   "revenue": "696.4485960000000"
+// },
+// {
+//   "date": "2017-01-01T05:00:00.000Z",
+//   "hour": 2,
+//   "impressions": 137464,
+//   "clicks": 217,
+//   "revenue": "732.0955030000000"
+// }
 app.get('/stats/hourly', (req, res, next) => {
   req.sqlQuery = `
     SELECT date, hour, impressions, clicks, revenue
@@ -47,6 +166,18 @@ app.get('/stats/hourly', (req, res, next) => {
   return next()
 }, queryHandler)
 
+// {
+//   "date": "2017-01-01T05:00:00.000Z",
+//   "impressions": "2764609",
+//   "clicks": "3627",
+//   "revenue": "13092.1234790000000"
+// },
+// {
+//   "date": "2017-01-02T05:00:00.000Z",
+//   "impressions": "943070",
+//   "clicks": "1489",
+//   "revenue": "4275.3479640000000"
+// }
 app.get('/stats/daily', (req, res, next) => {
   req.sqlQuery = `
     SELECT date,
@@ -61,6 +192,18 @@ app.get('/stats/daily', (req, res, next) => {
   return next()
 }, queryHandler)
 
+// {
+//   "poi_id": 1,
+//   "name": "EQ Works",
+//   "lat": 43.6708,
+//   "lon": -79.3899
+// },
+// {
+//   "poi_id": 2,
+//   "name": "CN Tower",
+//   "lat": 43.6426,
+//   "lon": -79.3871
+// },
 app.get('/poi', (req, res, next) => {
   req.sqlQuery = `
     SELECT *
@@ -68,6 +211,24 @@ app.get('/poi', (req, res, next) => {
   `
   return next()
 }, queryHandler)
+
+app.get('*', (req, res) => {
+  
+  
+  // const goodPagesRoutes = [
+  //   '/',
+  //   '/home',
+  //   '/projects',
+  //   '/workexperiences',
+  //   '/about',
+  //   '/contact',
+  // ];
+
+  // if (!goodPagesRoutes.includes(req.url)) {
+  //   res.status(404);
+  // }
+  // res.sendFile(__dirname + '/frontend/build/index.html');
+});
 
 app.listen(process.env.PORT || 5555, (err) => {
   if (err) {
