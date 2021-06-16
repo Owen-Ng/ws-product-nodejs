@@ -1,5 +1,5 @@
 const express = require('express');
-const pg = require('pg');
+// const pg = require('pg');
 require('dotenv').config();
 const app = express();
 const session = require('express-session');
@@ -22,13 +22,13 @@ app.use(
   })
 );
 
-const pool = new pg.Pool({
-  user: process.env.PGUSER,
-  password: process.env.PGPASSWORD,
-  host: process.env.PGHOST,
-  port: process.env.PGPORT,
-  database: process.env.PGDATABASE
-})
+// const pool = new pg.Pool({
+//   user: process.env.PGUSER,
+//   password: process.env.PGPASSWORD,
+//   host: process.env.PGHOST,
+//   port: process.env.PGPORT,
+//   database: process.env.PGDATABASE
+// })
 
 // const cpool = new pg.Pool({
 //   user: process.env.CUSER,
@@ -41,12 +41,6 @@ const pool = new pg.Pool({
 //   },
 
 // })
-
-const queryHandler = (req, res, next) => {
-  pool.query(req.sqlQuery).then((r) => {
-    return res.json(r.rows || [])
-  }).catch(next)
-}
 
 
 // app.post('/register', (req, res) =>{
@@ -86,33 +80,8 @@ app.get('/events/hourly', (req, res, next) => {
     ORDER BY date, hour
     LIMIT 168;
   `
+  TimeExecutionLimit(req,res,next, 'eventshourly', 5, 1);
  
-  if (req.session.executions.eventshourly.time == undefined){
-    const date2 = new Date();
-    req.session.executions['eventshourly'].time = date2;
-  }
-
-  if (! (req.session.executions.eventshourly.time instanceof Date)){
-    req.session.executions.eventshourly.time = new Date(req.session.executions.eventshourly.time);
-  }
-
-  switch(TimeExecutionLimit(req.session.executions.eventshourly.time, req.session.executions.eventshourly.count, 5, 1)){
-
-    case 'renew':
-      req.session.executions.eventshourly.count = 1;
-      req.session.executions.eventshourly.time = undefined;
-      queryHandler(req,res,next);
-      break;
-
-    case 'block':
-      res.send({message:"Max Limit Reached"});
-      break;
-
-    case 'continue':
-      req.session.executions.eventshourly.count += 1;
-      queryHandler(req,res,next);
-      break;
-  }
   return next()
 })
 
@@ -132,8 +101,9 @@ app.get('/events/daily', (req, res, next) => {
     ORDER BY date
     LIMIT 7;
   `
+  TimeExecutionLimit(req,res,next, 'eventsdaily', 5, 1);
   return next()
-}, queryHandler)
+})
 
 // {
 //   "date": "2017-01-01T05:00:00.000Z",
@@ -163,8 +133,9 @@ app.get('/stats/hourly', (req, res, next) => {
     ORDER BY date, hour
     LIMIT 168;
   `
+  TimeExecutionLimit(req,res,next, 'statshourly', 5, 1);
   return next()
-}, queryHandler)
+})
 
 // {
 //   "date": "2017-01-01T05:00:00.000Z",
@@ -189,8 +160,9 @@ app.get('/stats/daily', (req, res, next) => {
     ORDER BY date
     LIMIT 7;
   `
+  TimeExecutionLimit(req,res,next, 'statsdaily', 5, 1);
   return next()
-}, queryHandler)
+})
 
 // {
 //   "poi_id": 1,
@@ -209,8 +181,9 @@ app.get('/poi', (req, res, next) => {
     SELECT *
     FROM public.poi;
   `
+  TimeExecutionLimit(req,res,next, 'poi', 5, 1);
   return next()
-}, queryHandler)
+})
 
 app.get('*', (req, res) => {
   
