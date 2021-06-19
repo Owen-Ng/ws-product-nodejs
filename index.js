@@ -78,6 +78,8 @@ app.get('/start', (req, res, next) => {
 //   "date": "2017-01-01T05:00:00.000Z",
 //   "hour": 4,
 //   "events": 6
+// date is the x axis
+// events is the y axis
 // }
 app.get('/events/hourly', (req, res, next) => {
   req.sqlQuery = `
@@ -99,6 +101,8 @@ app.get('/events/hourly', (req, res, next) => {
 //   "date": "2017-01-02T05:00:00.000Z",
 //   "events": "32"
 // }
+// date is the x axis
+// events is the y axis
 app.get('/events/daily', (req, res, next) => {
   req.sqlQuery = `
     SELECT date, SUM(events) AS events

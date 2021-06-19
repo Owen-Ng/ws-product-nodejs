@@ -25,3 +25,19 @@
 .button-selected:hover{
     background-color: #c7e4fc !important;
 }
+#chart-header{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
+#chart-header select{
+    font-weight: bold;
+    height: fit-content;
+    font-size: 30px;
+    border-radius: 10px;
+    margin-right: 5px;
+    
+    
+}
