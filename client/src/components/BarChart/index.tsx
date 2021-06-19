@@ -99,10 +99,12 @@ export const BarChart: React.FC<Props> = (props) => {
     }
     const generatexAxes = () => {
         const out = []
+        const hourly = props.data ? props.data[0].hour : false;
         if (xaxis !== undefined) {
-            out.push({
+            const xaxis1 = {
                 id: 'xAxis1',
                 type: "category",
+                scaleLabel: {},
                 ticks: {
                     callback: function (label: string) {
                         var date = label.split(";")[0];
@@ -113,35 +115,61 @@ export const BarChart: React.FC<Props> = (props) => {
                             return hour
                         }
                     }
+
                 }
-            })
-            out.push({
+            }
+
+            const xaxis2 = {
                 id: 'xAxis2',
                 type: "category",
                 gridLines: {
                     drawOnChartArea: false, // only want the grid lines for one axis to show up
                 },
+                scaleLabel: {},
                 ticks: {
+                    autoSkip: false,
                     callback: function (label: string) {
                         var date = label.split(";")[0];
                         var hour = label.split(";")[1];
-                        console.log(hour)
                         if (hour === 'undefined') {
                             return "";
                         }
-                        // else {
-                        //     if (oldDate !== date) {
-                        //         SetoldDate(date);
-                        //         return date;
-                        //     } else {
-                        //         return "";
-                        //     }
+                        else {
+                            if (date !== olddate.current) {
+                                olddate.current = date
+                                return date
+                            }
+                            else {
+                                return "";
+                            }
 
-                        // }
+                        }
                     }
                 }
-            })
 
+            }
+            if (hourly) {
+                xaxis1['scaleLabel'] = {
+                    display: true,
+                    labelString: 'Hour'
+                }
+                xaxis2['scaleLabel'] = {
+                    display: true,
+                    labelString: 'Date'
+                }
+            } else {
+                xaxis1['scaleLabel'] = {
+                    display: true,
+                    labelString: 'Date'
+                }
+                xaxis2['scaleLabel'] = {
+                    display: true,
+                    labelString: 'Hour'
+                }
+
+            }
+            out.push(xaxis1);
+            out.push(xaxis2);
 
         }
         return out;
@@ -159,55 +187,7 @@ export const BarChart: React.FC<Props> = (props) => {
             options={{
                 maintainAspectRatio: false,
                 scales: {
-                    xAxes: [{
-                        id: 'xAxis1',
-                        type: "category",
-                        scaleLabel: {
-                            display: true,
-                            labelString: 'hour'
-                        },
-                        ticks: {
-                            callback: function (label: string) {
-                                var date = label.split(";")[0];
-                                var hour = label.split(";")[1];
-                                if (hour == 'undefined') {
-                                    return date
-                                } else {
-                                    return hour
-                                }
-                            }
-                        }
-                    }, {
-                        id: 'xAxis2',
-                        type: "category",
-                        gridLines: {
-                            drawOnChartArea: false, // only want the grid lines for one axis to show up
-                        },
-                        scaleLabel: {
-                            display: false,
-                            labelString: 'date'
-                        },
-                        ticks: {
-                            autoSkip: false,
-                            callback: function (label: string) {
-                                var date = label.split(";")[0];
-                                var hour = label.split(";")[1];
-                                if (hour === 'undefined') {
-                                    return "";
-                                }
-                                else {
-                                    if (date !== olddate.current) {
-                                        olddate.current = date
-                                        return date
-                                    }
-                                    else {
-                                        return "";
-                                    }
-
-                                }
-                            }
-                        }
-                    }],
+                    xAxes: generatexAxes(),
                     yAxes: [
                         {
                             ticks: {
