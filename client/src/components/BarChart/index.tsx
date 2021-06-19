@@ -15,25 +15,18 @@ interface Iyaxis {
 }
 const SetYaxis = ['events', 'impressions', 'clicks', 'revenue'] as const;
 const SetXaxis = ['hour', 'date'] as const;
+const colorData = { 'events': 'blue', 'impressions': 'red', 'clicks': 'yellow', 'revenue': 'blue' } as const;
 export const BarChart: React.FC<Props> = (props) => {
     const [xaxis, Setxaxis] = React.useState<string[]>([]);
     const [yaxis, Setyaxis] = React.useState<Iyaxis>();
-    const [oldDate, SetoldDate] = React.useState<string[]>([]);
     const olddate = React.useRef<string>();
     React.useEffect(() => {
+        if (!(xaxis === [] || yaxis === undefined)) {
+            Setxaxis([]);
+            Setyaxis(undefined);
+        }
         props.data?.forEach(res => {
             Setxaxis(prev => [...prev, res.date + ";" + res.hour]);
-            // Setxaxis(prev => {
-            //     const old = prev
-            //     old.push(res.date + ';' + res.hour)
-            //     return [old]
-
-            //     // }else{
-            //     //     oldaxes.push(res.date + ';' + res.hour)
-            //     //     return {...prev,  axes:oldaxes}
-            //     // }
-
-            // })
             SetYaxis.forEach(i => {
                 if (i in res) {
                     Setyaxis((prev) => {
@@ -43,37 +36,11 @@ export const BarChart: React.FC<Props> = (props) => {
                             old = []
                         }
                         old.push(res[i]);
-                        return { ...prev, events: old }
+                        return { ...prev, [i]: old }
                     })
                 }
             })
-            // if ('events' in res) {
-            //     Setyaxis((prev) => {
-            //         let events = prev?.events;
-            //         if (events === undefined) {
-            //             events = []
-            //         }
-            //         events.push(res.events);
-            //         return { ...prev, events: events }
-            //     })
-            // }
-            // if ('impressions' in res) {
-            //     Setyaxis((prev) => {
-            //         return { ...prev, impressions: [...res.impressions] }
-            //     })
-            // }
-            // if ('clicks' in res) {
-            //     Setyaxis((prev) => {
-            //         return { ...prev, clicks: [...res.clicks] }
-            //     })
-            // }
 
-            // if ('revenue' in res) {
-            //     Setyaxis((prev) => {
-            //         return { ...prev, revenue: [...res.revenue] }
-            //     })
-
-            // }
         })
 
 
@@ -87,7 +54,8 @@ export const BarChart: React.FC<Props> = (props) => {
                 if (i in yaxis) {
                     const data = {
                         label: i,
-                        data: yaxis[i]
+                        data: yaxis[i],
+                        backgroundColor: colorData[i]
                     }
                     dataset.push(data)
                 }
@@ -97,9 +65,13 @@ export const BarChart: React.FC<Props> = (props) => {
         return dataset;
 
     }
+    function DateExcessRemoval(date: string): string {
+        return date.split('T')[0];
+    }
     const generatexAxes = () => {
         const out = []
         const hourly = props.data ? props.data[0].hour : false;
+        console.log(hourly);
         if (xaxis !== undefined) {
             const xaxis1 = {
                 id: 'xAxis1',
@@ -110,9 +82,9 @@ export const BarChart: React.FC<Props> = (props) => {
                         var date = label.split(";")[0];
                         var hour = label.split(";")[1];
                         if (hour == 'undefined') {
-                            return date
+                            return DateExcessRemoval(date);
                         } else {
-                            return hour
+                            return hour;
                         }
                     }
 
@@ -123,7 +95,7 @@ export const BarChart: React.FC<Props> = (props) => {
                 id: 'xAxis2',
                 type: "category",
                 gridLines: {
-                    drawOnChartArea: false, // only want the grid lines for one axis to show up
+                    drawOnChartArea: false,
                 },
                 scaleLabel: {},
                 ticks: {
@@ -137,7 +109,7 @@ export const BarChart: React.FC<Props> = (props) => {
                         else {
                             if (date !== olddate.current) {
                                 olddate.current = date
-                                return date
+                                return DateExcessRemoval(date);
                             }
                             else {
                                 return "";
@@ -148,7 +120,7 @@ export const BarChart: React.FC<Props> = (props) => {
                 }
 
             }
-            if (hourly) {
+            if (hourly || hourly == 0) {
                 xaxis1['scaleLabel'] = {
                     display: true,
                     labelString: 'Hour'
@@ -163,7 +135,7 @@ export const BarChart: React.FC<Props> = (props) => {
                     labelString: 'Date'
                 }
                 xaxis2['scaleLabel'] = {
-                    display: true,
+                    display: false,
                     labelString: 'Hour'
                 }
 
@@ -175,6 +147,9 @@ export const BarChart: React.FC<Props> = (props) => {
         return out;
     }
     console.log(xaxis);
+    console.log(yaxis);
+    console.log(generatedataset())
+    console.log(generatexAxes())
     return (<div>
         {yaxis && xaxis ? <Bar
             type='bar'
@@ -195,6 +170,23 @@ export const BarChart: React.FC<Props> = (props) => {
                             }
                         }
                     ]
+                },
+                tooltips: {
+                    callbacks: {
+                        title: function (t: any[], d: any) {
+                            console.log(t);
+                            const label = d.labels[t[0].index];
+                            var date = label.split(";")[0];
+                            var hour = label.split(";")[1];
+                            if (hour === 'undefined') {
+                                return DateExcessRemoval(date)
+                            } else {
+                                return DateExcessRemoval(date) + ", " + hour + " hours after";
+
+
+                            }
+                        }
+                    }
                 }
             }}
 

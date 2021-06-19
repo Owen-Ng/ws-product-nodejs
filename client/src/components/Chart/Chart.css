@@ -1,0 +1,27 @@
+#button-container{
+    display: flex;
+    justify-content: space-around;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    
+
+}
+#button-container button{
+    background-color: grey;
+    padding: 10px;
+    border-radius: 10px;
+    color: white;
+    margin: 10px;
+
+}
+
+#button-container button:hover{
+    background-color: rgb(180, 179, 179);
+}
+.button-selected{
+    background-color: #90caf9 !important;
+}
+.button-selected:hover{
+    background-color: #c7e4fc !important;
+}
