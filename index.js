@@ -3,12 +3,17 @@ const express = require('express');
 require('dotenv').config();
 const app = express();
 const session = require('express-session');
+const cors = require('cors');
+
 const date = require('date-and-time');
 
 const {TimeExecutionLimit} = require("./TimeLimit.js");
 // const TimeExecutionLimit = TimeLimit.TimeExecutionLimit;
 // configs come from standard PostgreSQL env vars
 // https://www.postgresql.org/docs/9.6/static/libpq-envars.html
+app.use(express.json());
+app.use(cors());
+app.use(express.urlencoded({ extended: true }));
 
 app.use(
   session({
@@ -47,12 +52,13 @@ app.use(
 //   const [email, password] = req.body;
 //   const sql = ""
 // })
-app.get('/', (req, res, next) => {
+
+app.get('/start', (req, res, next) => {
   if (req.session.time == undefined && req.session.user_id == undefined){
     
     req.session.time = new Date();
     const token = Math.floor(Math.random() * 1000000000).toString() + req.session.time.toString();
-    req.session.user_id = token;
+    req.session.user_id =token.replace(/\s/g, "");
     req.session.executions = {eventshourly:{count:0, time: undefined}, 
     eventsdaily: {count:0, time: undefined}, statshourly: {count:0, time:undefined},
      statsdaily: {count:0, time: undefined}, poi: {count:0, time: undefined}}
@@ -82,7 +88,7 @@ app.get('/events/hourly', (req, res, next) => {
   `
   TimeExecutionLimit(req,res,next, 'eventshourly', 5, 1);
  
-  return next()
+  return 
 })
 
 // {
@@ -102,7 +108,7 @@ app.get('/events/daily', (req, res, next) => {
     LIMIT 7;
   `
   TimeExecutionLimit(req,res,next, 'eventsdaily', 5, 1);
-  return next()
+  return 
 })
 
 // {
@@ -134,7 +140,7 @@ app.get('/stats/hourly', (req, res, next) => {
     LIMIT 168;
   `
   TimeExecutionLimit(req,res,next, 'statshourly', 5, 1);
-  return next()
+  return 
 })
 
 // {
@@ -161,7 +167,7 @@ app.get('/stats/daily', (req, res, next) => {
     LIMIT 7;
   `
   TimeExecutionLimit(req,res,next, 'statsdaily', 5, 1);
-  return next()
+  return 
 })
 
 // {
@@ -182,25 +188,25 @@ app.get('/poi', (req, res, next) => {
     FROM public.poi;
   `
   TimeExecutionLimit(req,res,next, 'poi', 5, 1);
-  return next()
+  return 
 })
 
+app.use(express.static(__dirname + '/client/build'));
 app.get('*', (req, res) => {
   
   
-  // const goodPagesRoutes = [
-  //   '/',
-  //   '/home',
-  //   '/projects',
-  //   '/workexperiences',
-  //   '/about',
-  //   '/contact',
-  // ];
+  const goodPagesRoutes = [
+    '/',
+    '/chart',
+    '/table',
+    '/geo',
+   
+  ];
 
-  // if (!goodPagesRoutes.includes(req.url)) {
-  //   res.status(404);
-  // }
-  // res.sendFile(__dirname + '/frontend/build/index.html');
+  if (!goodPagesRoutes.includes(req.url)) {
+    res.status(404);
+  }
+  res.sendFile(__dirname + '/client/build/index.html');
 });
 
 app.listen(process.env.PORT || 5555, (err) => {
