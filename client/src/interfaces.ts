@@ -27,3 +27,26 @@ export interface Ipoi {
     lat: number,
     lon: number
 }
+
+export interface Itable_data {
+    date: string,
+    name: string,
+    lat: number,
+    lon: number,
+    poi_id: number,
+    events: number,
+    impressions: number,
+    clicks: number,
+    revenue: number
+}
+
+export interface Igeo_data {
+    name: string,
+    lat: number,
+    lon: number,
+    poi_id: number,
+    events: number,
+    impressions: number,
+    clicks: number,
+    revenue: number
+}

@@ -1,4 +1,4 @@
-import { Ieventshourly, Ieventsdaily, Istatshourly, Istatsdaily, Ipoi } from './interfaces';
+import { Ieventshourly, Ieventsdaily, Istatshourly, Istatsdaily, Ipoi, Itable_data, Igeo_data } from './interfaces';
 export function start(callback: React.Dispatch<React.SetStateAction<string>>): void {
     fetch('/start', {
         method: "GET"
@@ -88,4 +88,33 @@ export function poi(callback: React.Dispatch<React.SetStateAction<Ipoi[] | undef
         console.log(err);
     })
 
+}
+export function table_data(callback: React.Dispatch<React.SetStateAction<Itable_data[] | undefined>>) {
+    fetch('/api/table', {
+        method: "GET"
+    }).then(res => {
+        if (res.status == 200) {
+            return res.json()
+        }
+    }).then(res => {
+        callback(res);
+    }).catch(err => {
+        console.log(err);
+
+    })
+}
+
+export function geo_data(callback: React.Dispatch<React.SetStateAction<Igeo_data[] | undefined>>) {
+    fetch('/api/geo', {
+        method: "GET"
+    }).then(res => {
+        if (res.status == 200) {
+            return res.json()
+        }
+    }).then(res => {
+        callback(res);
+    }).catch(err => {
+        console.log(err);
+
+    })
 }

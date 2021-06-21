@@ -1,18 +1,16 @@
 import React from 'react'
 
-import { Ieventshourly, Ieventsdaily, Istatshourly, Istatsdaily, Ipoi } from '../../interfaces';
+import { Igeo_data } from '../../interfaces';
+import { Map } from './Map';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 
 interface Props {
-    statshour: Istatshourly[] | undefined,
-    statsdaily: Istatsdaily[] | undefined,
-    eventsdaily: Ieventsdaily[] | undefined,
-    eventshour: Ieventshourly[] | undefined,
-    poi: Ipoi[] | undefined
+    data: Igeo_data[] | undefined
 }
-export const Geo: React.FC<Props> = () => {
+export const Geo: React.FC<Props> = (props) => {
     return (
-        <div>
+        <div className="geo-container">
             <h1>Geo</h1>
-
+            <Map data={props.data} />
         </div>);
 }

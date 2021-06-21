@@ -61,7 +61,9 @@ app.get('/start', (req, res, next) => {
     req.session.user_id =token.replace(/\s/g, "");
     req.session.executions = {eventshourly:{count:0, time: undefined}, 
     eventsdaily: {count:0, time: undefined}, statshourly: {count:0, time:undefined},
-     statsdaily: {count:0, time: undefined}, poi: {count:0, time: undefined}}
+     statsdaily: {count:0, time: undefined}, poi: {count:0, time: undefined}, 
+     table:{count:0, time: undefined}, geo:{count:0, time: undefined}},
+     
     req.session.save();
   }
   console.log(req.session.time);
@@ -192,6 +194,53 @@ app.get('/poi', (req, res, next) => {
     FROM public.poi;
   `
   TimeExecutionLimit(req,res,next, 'poi', 5, 1);
+  return 
+})
+// "date": "2017-01-01T05:00:00.000Z",
+// "name": "Vancouver Harbour",
+// "lat": 49.2965,
+// "lon": -123.0884,
+// "poi_id": 4,
+// "events": "14",
+// "impressions": "141397",
+// "clicks": "201",
+// "revenue": "696.4485960000000"
+app.get('/api/table', (req, res, next) => {
+  req.sqlQuery = `
+  SELECT date, name, lat, lon, poi_id, SUM(events) AS events,
+  SUM(impressions) AS impressions,
+  SUM(clicks) AS clicks,
+  SUM(revenue) AS revenue
+  FROM public.hourly_stats NATURAL JOIN public.poi NATURAL JOIN public.hourly_events
+  GROUP BY date, poi_id, name, lat,lon
+  ORDER BY date
+  limit 168;
+  `
+  TimeExecutionLimit(req,res,next, 'table', 5, 1);
+  return 
+})
+
+// {
+//   "name": "EQ Works",
+//   "lat": 43.6708,
+//   "lon": -79.3899,
+//   "poi_id": 1,
+//   "events": "402",
+//   "impressions": "6091190",
+//   "clicks": "4965",
+//   "revenue": "18503.6109340000000"
+// },
+app.get('/api/geo', (req,res, next) =>{
+  req.sqlQuery = `
+  SELECT name, lat, lon, poi_id, SUM(events) AS events,
+  SUM(impressions) AS impressions,
+  SUM(clicks) AS clicks,
+  SUM(revenue) AS revenue
+  FROM public.hourly_stats NATURAL JOIN public.hourly_events NATURAL JOIN public.poi
+  GROUP BY  poi_id, name, lat,lon
+  ORDER BY poi_id
+  `
+  TimeExecutionLimit(req,res,next, 'geo', 5, 1);
   return 
 })
 

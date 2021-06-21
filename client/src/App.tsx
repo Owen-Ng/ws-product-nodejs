@@ -7,8 +7,8 @@ import { Geo } from "./components/Geo";
 import { Navbar } from "./components/Navbar";
 import { Route, Switch, BrowserRouter } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { start, eventshourly, eventsdaily, statsdaily, statshourly, poi } from './api_calls';
-import { Ieventshourly, Ieventsdaily, Istatshourly, Istatsdaily, Ipoi } from './interfaces';
+import { start, eventshourly, eventsdaily, statsdaily, statshourly, poi, table_data, geo_data } from './api_calls';
+import { Ieventshourly, Ieventsdaily, Istatshourly, Istatsdaily, Ipoi, Itable_data, Igeo_data } from './interfaces';
 
 const App: React.FC = () => {
   const [User, setUser] = useState<string>("");
@@ -17,6 +17,8 @@ const App: React.FC = () => {
   const [Statshourly, setStatshourly] = useState<Istatshourly[]>();
   const [Eventshourly, setEventshourly] = useState<Ieventshourly[]>();
   const [Eventsdaily, setEventsdaily] = useState<Ieventsdaily[]>();
+  const [Table_data, setTable_data] = useState<Itable_data[]>();
+  const [Geo_Data, setGeo_Data] = useState<Igeo_data[]>();
 
   useEffect(() => {
     start(setUser);
@@ -29,6 +31,8 @@ const App: React.FC = () => {
       statsdaily(setStatsdaily);
       statshourly(setStatshourly)
       poi(setPoi);
+      table_data(setTable_data);
+      geo_data(setGeo_Data);
     }
   }, [User])
 
@@ -52,10 +56,10 @@ const App: React.FC = () => {
             <Chart statshour={Statshourly} statsdaily={Statsdaily} poi={Poi} eventshour={Eventshourly} eventsdaily={Eventsdaily} />
           </Route>
           <Route path='/table' >
-            <Table statshour={Statshourly} statsdaily={Statsdaily} poi={Poi} eventshour={Eventshourly} eventsdaily={Eventsdaily} />
+            <Table data={Table_data} />
           </Route>
           <Route path='/geo'>
-            <Geo statshour={Statshourly} statsdaily={Statsdaily} poi={Poi} eventshour={Eventshourly} eventsdaily={Eventsdaily} />
+            <Geo data={Geo_Data} />
           </Route>
         </Switch>
 

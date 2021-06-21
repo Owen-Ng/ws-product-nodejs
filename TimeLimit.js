@@ -52,7 +52,7 @@ function TimeExecutionLimit(req,res,next, param, maxExecution, maxMin){
           break;
     
         case 'block':
-          res.send({message:"Max Limit Reached"});
+          res.status(400).send({message:"Max Limit Reached"});
           break;
     
         case 'continue':

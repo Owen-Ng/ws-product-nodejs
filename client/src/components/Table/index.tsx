@@ -1,13 +1,9 @@
 import React from 'react'
 
-import { Ieventshourly, Ieventsdaily, Istatshourly, Istatsdaily, Ipoi } from '../../interfaces';
+import { Itable_data } from '../../interfaces';
 
 interface Props {
-    statshour: Istatshourly[] | undefined,
-    statsdaily: Istatsdaily[] | undefined,
-    eventsdaily: Ieventsdaily[] | undefined,
-    eventshour: Ieventshourly[] | undefined,
-    poi: Ipoi[] | undefined
+    data: Itable_data[] | undefined
 }
 
 export const Table: React.FC<Props> = () => {
