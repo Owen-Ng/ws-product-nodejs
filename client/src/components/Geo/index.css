@@ -1,4 +1,37 @@
 .geo-container{
+    
+    text-align: center;
+}
+.red{
+    background-color: red;
+    width: 20px;
+    height: 5px;
+}
+.blue{
+    background-color: blue;
+    width: 20px;
+    height: 5px;
+}
+.yellow{
+    background-color: yellow;
+    width: 20px;
+    height: 5px;
+}
+.green{
+    background-color: green;
+    width: 20px;
+    height: 5px;
+}
+.overline{
+    text-decoration: line-through;
+}
+#buttons{
     display: flex;
     justify-content: center;
+
+}
+#buttons div{
+    display: inline-block;
+    margin: 5px;
+    cursor: pointer;
 }
