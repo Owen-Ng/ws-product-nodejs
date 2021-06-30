@@ -1,5 +1,7 @@
 [Here is the deployment link](https://eqwork.herokuapp.com/)
 
+[https://eqwork.herokuapp.com/]
+
 Work Sample for Product Aspect, Node.js Variant
 ---
 
