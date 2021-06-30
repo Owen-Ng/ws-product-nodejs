@@ -1,6 +1,6 @@
 .wrapper{
     max-width: 450px;
-    margin: 150px auto;
+    margin: auto;
   }
   .wrapper .search-input{
     background: #fff;
@@ -25,15 +25,15 @@
   .search-input .autocom-box{
     padding: 0;
     /* opacity: 0; */
-    pointer-events: none;
+    /* pointer-events: none; */
     max-height: 280px;
     overflow-y: auto;
   }
-  .search-input.active .autocom-box{
+  /* .search-input.active .autocom-box{
     padding: 10px 8px;
     opacity: 1;
     pointer-events: auto;
-  }
+  } */
   .autocom-box li{
     list-style: none;
     padding: 8px 12px;
@@ -42,11 +42,12 @@
     cursor: default;
     border-radius: 3px;
   }
-  .search-input.active .autocom-box li{
+  /* .search-input.active .autocom-box li{
     display: block;
-  }
+  } */
   .autocom-box li:hover{
-    background: #221e1e;
+    background: #264552;
+    cursor: pointer;
   }
   .search-input .icon{
     position: absolute;
@@ -61,5 +62,20 @@
     cursor: pointer;
   }
 .table-box{
-    background-color: #644bff;
+    display: block;
+    justify-content: center;
+    text-align: center;
+}
+table, th, td {
+  border: 1px solid black;
+}
+table{
+  position: fixed;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  margin: auto;
+  width: 800px;
+  
+  
 }
